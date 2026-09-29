@@ -1,6 +1,18 @@
+# ==================== WEB DASHBOARD ====================
 aiohttp==3.9.5
+
+# ==================== HTTP / NETWORK ====================
 httpx==0.27.2
 requests==2.32.3
+
+# ==================== CRYPTO (AES / TEA) ====================
 pycryptodome==3.20.0
+
+# ==================== PROTOBUF (Main.py + সব _pb2.py) ====================
 protobuf==6.30.0
+
+# ==================== GOOGLE PLAY VERSION SCRAPER ====================
 google-play-scraper==1.2.7
+
+# ==================== PROTOBUF DECODER (UDP Packet Parser) ====================
+protobuf-decoder==0.4.0
