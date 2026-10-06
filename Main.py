@@ -42,7 +42,7 @@ TOKEN_CACHE_FILE = "token_cache.json"
 DEVICES_FILE = "devices.json"
 TOKEN_CACHE_TTL = 1200
 
-# Match control (Only Lone Wolf)
+# Match control (Battle Royale Only - Lone Wolf Disabled)
 START_MATCH_INTERVAL = 3.0
 NEW_MATCH_DELAY = 3.0
 MAX_MATCH_DURATION = 700
@@ -643,18 +643,18 @@ async def build_majorlogin_payload(open_id, access_token, platform, client_versi
         proto.platform_id = 1
         proto.client_version = str(verr)
         proto.client_version_code = "2019121229"
-        proto.system_software = "Android OS 15 / API-35 (AP3A.240905.015.A2/185014)"
-        proto.system_hardware = "Handheld"
-        proto.device_type = "Handheld"
-        proto.screen_width = 1600
-        proto.screen_height = 719
-        proto.screen_dpi = "234"
-        proto.processor_details = "ARM64 FP ASIMD AES | 1820 | 8"
-        proto.memory = 2798
-        proto.gpu_renderer = "Mali-G57"
+        proto.system_software = device_info.get("system_software", "Android OS 15 / API-35")
+        proto.system_hardware = device_info.get("brand", "Handheld")
+        proto.device_type = device_info.get("model", "Handheld")
+        proto.screen_width = int(device_info.get("screen_width", 1600))
+        proto.screen_height = int(device_info.get("screen_height", 719))
+        proto.screen_dpi = str(device_info.get("screen_dpi", "234"))
+        proto.processor_details = device_info.get("processor_details", "ARM64 FP ASIMD AES | 1820 | 8")
+        proto.memory = int(device_info.get("memory", 2798))
+        proto.gpu_renderer = device_info.get("gpu_renderer", "Mali-G57")
         proto.gpu_version = "OpenGL ES 3.2 v1.r49p1-04eac0.2848c17a2fd4e9340e06555168eaa3c9"
-        proto.unique_device_id = "Google|f744e396-5694-4e65-995d-97a958f2bd1f"
-        proto.client_ip = "197.0.137.129"
+        proto.unique_device_id = device_info.get("unique_device_id", "Google|f744e396-5694-4e65-995d-97a958f2bd1f")
+        proto.client_ip = device_info.get("client_ip", "197.0.137.129")
         proto.language = "pt-br"
         proto.open_id = str(open_id)
         proto.open_id_type = "4"
@@ -923,10 +923,15 @@ async def send_keep_alive(region="ME"):
         return bytes.fromhex("0219")
 
 
-# ==================== LONE WOLF MATCH PACKETS ====================
-
-async def start_game_lone_wolf(region, client_version, writer, key, iv):
-    packet = bytes.fromhex("080112800a0a010b102b3a110a044944433110aa011a064555524f50453a100a044944433210311a064555524f504540014a0801090a0b1219202758016291090a8001303838463832424630324139363736373032303130313030303030303030303030303136303030313030313530303032323246393745454530463030303030303436373632353134303030303030303030303030303030303030303030303030303030303030303030303030303066663030303030303030636163666131366410241afb02735d5e571400024a775d45414d1a041b1c001f11010449715f4243481a001e1d071c1703004b1a4066785c524570735c51486775421b5c5a4c07504042685a63610816054e19025e75196001477c015165406370195f5547404e4550640103020f1304064863754268676c755f65576e40467e5f0a417a4701026d675d6e73670b1108495a4c6a0b78470b740065645e525a057258425f584a447d4e6759440c11044e7c596d7f4b625f7d04055a47505c4e1d6b5b4107447d7201057d7f0f14084e430457674f7e517d72015172415d027473577c4d615f79535256780911030f4d5e027a797f614165067806505d53777750475e75064257076500460817014e741e7e5078487e7a7c465e7669767153497064605a7376677773550d160148037e18675966787f4c42607a645f577e7b441b460776026b18685d0b110205490060020f70676175654674706671797f41067346677c4e06585e780f15074c57047b40517075415f6364027259674b5b0166407f7340600407770a22047a5d5c52300b3a0a167305067162727516134208312e3133302e3232480350015ae90403626253513635686e556f4e36416456324b796f566c636f477776484f624e56526c4d727073504b4f43654177616848494176795556497273743752737149734a7a786b3247525268377a2f637664626d504f6a73552f79626d38547a4c69586d2f474351696d494b53486833447955726f39515152756c34545350626d6d624b7949565937545671577059455372323646572f59624578507338514f706d317372785455736c30796a434144444d4f34616a654b615753366361496c554b4963797a494e396d52516f715277687939797257476d337a644345337a6a61436f492f5a585233656f65365a42647a64677654636b6b665733356e4d4c6a6a565072564b6433523172756174394e50514150724a5546627859696c4c5a3859707336654d5447666b6649793574666a526c314d4648706b51774c6373374439656378566c41636f374e664f6d2b30654756466c4434744478706771385533595973587645384842502f70666c767a737138316a32524f4d7857437556445442492f684735625462773166456e4249725162762b636144775147696f74554e316d4c4b77734379456f4766706746614251457645672b736a764c4c78704743334c304a5344532f74526169504354553344374e6249306547516651622f5a466f4c36455630775a324d6f583932414c572f5049752f56634663584e70596b356f7966326151416a536971486a2f363276354843644f525551303578754e6171795251625653704654303137655237675255636b4966366c6f447476342b514e4a4670766d74757077707774396a5a5974437a4b56743657726d6e36785837706658456251555434684f3758a201050803108703a201050804108103a20105080510c001a20105081d10cc01a2010408161078a20105080e10af01a201020815")
+# ============================================================
+# 🔥 BATTLE ROYALE MATCH PACKET (LONE WOLF DISABLED)
+# ============================================================
+async def start_game_battle_royale(region, client_version, writer, key, iv):
+    """
+    🔥 Battle Royale StartMatch packet.
+    Mode ID: 1 (BR) | Map: 1
+    """
+    packet = bytes.fromhex("080112800a0a010110013a110a044944433110aa011a064555524f50453a100a044944433210311a064555524f504540014a0801090a0b1219202758016291090a8001303838463832424630324139363736373032303130313030303030303030303030303136303030313030313530303032323246393745454530463030303030303436373632353134303030303030303030303030303030303030303030303030303030303030303030303030303066663030303030303030636163666131366410241afb02735d5e571400024a775d45414d1a041b1c001f11010449715f4243481a001e1d071c1703004b1a4066785c524570735c51486775421b5c5a4c07504042685a63610816054e19025e75196001477c015165406370195f5547404e4550640103020f1304064863754268676c755f65576e40467e5f0a417a4701026d675d6e73670b1108495a4c6a0b78470b740065645e525a057258425f584a447d4e6759440c11044e7c596d7f4b625f7d04055a47505c4e1d6b5b4107447d7201057d7f0f14084e430457674f7e517d72015172415d027473577c4d615f79535256780911030f4d5e027a797f614165067806505d53777750475e75064257076500460817014e741e7e5078487e7a7c465e7669767153497064605a7376677773550d160148037e18675966787f4c42607a645f577e7b441b460776026b18685d0b110205490060020f70676175654674706671797f41067346677c4e06585e780f15074c57047b40517075415f6364027259674b5b0166407f7340600407770a22047a5d5c52300b3a0a167305067162727516134208312e3133302e3232480350015ae90403626253513635686e556f4e36416456324b796f566c636f477776484f624e56526c4d727073504b4f43654177616848494176795556497273743752737149734a7a786b3247525268377a2f637664626d504f6a73552f79626d38547a4c69586d2f474351696d494b53486833447955726f39515152756c34545350626d6d624b7949565937545671577059455372323646572f59624578507338514f706d317372785455736c30796a434144444d4f34616a654b615753366361496c554b4963797a494e396d52516f715277687939797257476d337a644345337a6a61436f492f5a585233656f65365a42647a64677654636b6b665733356e4d4c6a6a565072564b6433523172756174394e50514150724a5546627859696c4c5a3859707336654d5447666b6649793574666a526c314d4648706b51774c6373374439656378566c41636f374e664f6d2b30654756466c4434744478706771385533595973587645384842502f70666c767a737138316a32524f4d7857437556445442492f684735625462773166456e4249725162762b636144775147696f74554e316d4c4b77734379456f4766706746614251457645672b736a764c4c78704743334c304a5344532f74526169504354553344374e6249306547516651622f5a466f4c36455630775a324d6f583932414c572f5049752f56634663584e70596b356f7966326151416a536971486a2f363276354843644f525551303578754e6171795251625653704654303137655237675255636b4966366c6f447476342b514e4a4670766d74757077707774396a5a5974437a4b56743657726d6e36785837706658456251555434684f3758a201050803108703a201050804108103a20105080510c001a20105081d10cc01a2010408161078a20105080e10af01a201020815")
     proto = thunderFF_pb2.StartMatch()
     proto.ParseFromString(packet)
     if hasattr(proto.main, 'region_list') and len(proto.main.region_list) > 0:
@@ -945,6 +950,20 @@ async def start_game_lone_wolf(region, client_version, writer, key, iv):
     final_packet = reg_prefix + "0" * (6 - len(hex_length)) + hex_length + encrypted_packet
     writer.write(bytes.fromhex(final_packet))
     await writer.drain()
+    print_info(f"[⚔] Battle Royale Match Search Packet Sent ({packet_length} bytes, prefix: {reg_prefix}) | Region: {reg}")
+
+
+# ============================================================
+# 🔥 LONE WOLF → ALIAS TO BATTLE ROYALE (BACKWARD COMPAT)
+# ============================================================
+async def start_game_lone_wolf(region, client_version, writer, key, iv):
+    """
+    🔥 Lone Wolf DISABLED — This function now sends Battle Royale packet.
+    Kept for backward compatibility so existing code doesn't break.
+    """
+    print_warning("[!] Lone Wolf disabled — Forcing Battle Royale packet")
+    await start_game_battle_royale(region, client_version, writer, key, iv)
+
 
 async def has_ssan_zig(n):
     z = (n << 1) & 0xFFFFFFFFFFFFFFFF
@@ -1048,7 +1067,12 @@ async def sv_frame(msg_key, layout, send_option, cmd, order_id, flags, content, 
 async def build_match_startup_packets(token, udp_key, match_code, account_id, block_val,
                                       server_ip="", region="ME", client_version="1.132.8",
                                       client_version_code="2019121229", access_token="",
-                                      mode_id=43, map_id=11):
+                                      mode_id=1, map_id=1):
+    """
+    🔥 Battle Royale startup packets.
+    mode_id=1 → BR mode
+    map_id=1  → Bermuda map
+    """
     token = token.strip()
     udp_key = bytes.fromhex(udp_key)
     match_code = [int(ch) for ch in str(match_code).strip()]
@@ -1061,11 +1085,13 @@ async def build_match_startup_packets(token, udp_key, match_code, account_id, bl
     garena420 = await has_ssan_zig(len(encoded_thunder_jwt)) + encoded_thunder_jwt
 
     reg = str(region).upper() if region else "ME"
+
+    # 🔥 BATTLE ROYALE csoversea_block (BR version)
     csoversea_block = bytes.fromhex(
         "ca0163736f7665727365612e7374726f6e67686f6c642e66726565666972656d6f62696c652e636f6d"
         "3b302e302e302e303b33342e3132362e37362e34353b33342e38372e3137372e31343b33342e38372e"
         "3137302e3233303b33352e3138352e3138332e35370000000000000100000000000000000000000001"
-        "00000800000100000000000100a8a2d7bebd8d8bdf110200"
+        "00000000000100010000000100b09df8c5fad88bdf110200"
     )
 
     mid = bytes.fromhex('0000000001000102030101') + await has_ssan_zig(len(reg)) + reg.encode()
@@ -1083,13 +1109,14 @@ async def build_match_startup_packets(token, udp_key, match_code, account_id, bl
 
     mid += await has_ssan_zig(len(encoded_sharma_jwt)) + encoded_sharma_jwt
 
+    # 🔥 BR mode values (mode_id=1, map_id=1)
     tg_garena420 = (
         await uleb_encode(int(account_id)) +
         await uleb_encode(int(block_val)) +
         await uleb_encode(1) +
-        await uleb_encode(int(mode_id)) +
+        await uleb_encode(int(mode_id)) +     # 1 = Battle Royale
         await uleb_encode(int(block_val)) +
-        await uleb_encode(int(map_id)) +
+        await uleb_encode(int(map_id)) +       # 1 = Bermuda
         mid
     )
 
@@ -1486,7 +1513,9 @@ async def play_game(server_ip_port, thunder, sharma, udp_key, match_code,
             pass
 
 
-# ==================== LONE WOLF MAIN LOOP ====================
+# ============================================================
+# 🔥 MAIN LOOP — BATTLE ROYALE ONLY (Lone Wolf Disabled)
+# ============================================================
 async def functional_lone_wolf(addrs, starter_packet, account_region, client_version,
                                 key, iv, account_id="", account_data=None,
                                 max_reconnects=10):
@@ -1567,21 +1596,22 @@ async def functional_lone_wolf(addrs, starter_packet, account_region, client_ver
                     nonlocal search_attempts, last_start_time
                     search_attempts += 1
                     current_region = "ME"
-                    print_info(f"[LONE WOLF] Sending StartMatch #{search_attempts} region: {current_region}")
+                    # 🔥 ALWAYS BATTLE ROYALE
+                    print_info(f"[⚔] Sending Battle Royale StartMatch #{search_attempts} region: {current_region}")
                     try:
                         await asyncio.sleep(random.uniform(0.3, 0.6))
-                        await start_game_lone_wolf(
+                        await start_game_battle_royale(
                             current_region, client_version, writer,
                             current_key, current_iv
                         )
-                        print_success("[LONE WOLF] StartMatch packet sent")
+                        print_success("[⚔] Battle Royale StartMatch packet sent")
                         active = await _get_match_count(uid_str)
                         try:
-                            bot_state.update_status(uid_str, "SEARCHING", active)
+                            bot_state.update_status(uid_str, "SEARCHING (BR)", active)
                         except Exception:
                             pass
                     except Exception as e:
-                        print_error(f"start_game_lone_wolf error: {e}")
+                        print_error(f"start_game_battle_royale error: {e}")
                     last_start_time = asyncio.get_running_loop().time()
 
                 await send_start_match()
@@ -1593,7 +1623,7 @@ async def functional_lone_wolf(addrs, starter_packet, account_region, client_ver
                     try:
                         bot_state.update_status(
                             uid_str,
-                            "ONLINE" if active_count == 0 else "IN_MATCH",
+                            "ONLINE (BR)" if active_count == 0 else "IN_MATCH (BR)",
                             active_count
                         )
                     except Exception:
@@ -1620,12 +1650,12 @@ async def functional_lone_wolf(addrs, starter_packet, account_region, client_ver
                     no_response_count = 0
 
                     if hex_data.startswith("0300") and 10 < packet_length < 30:
-                        print_info("Match starting, please wait...")
+                        print_info("Battle Royale match starting, please wait...")
                         continue
 
                     if hex_data.startswith("0300") and packet_length >= 300:
                         print_colored("=" * 60, Colors.GREEN)
-                        print_colored("MATCH FOUND! Loading...", Colors.GREEN)
+                        print_colored("BATTLE ROYALE MATCH FOUND! Loading...", Colors.GREEN)
                         print_colored("=" * 60, Colors.GREEN)
 
                         try:
@@ -1657,24 +1687,25 @@ async def functional_lone_wolf(addrs, starter_packet, account_region, client_ver
                                 acc_tok = ""
                                 if current_account_data:
                                     acc_tok = current_account_data.get('access_token', '') or ""
+                                # 🔥 BR mode_id=1, map_id=1
                                 thunder, sharma = await build_match_startup_packets(
                                     token, udp_key, match_code, effective_acc_id, block_val or 0,
                                     server_ip=server_ip_port,
                                     region=account_region,
                                     client_version=client_version,
                                     access_token=acc_tok,
-                                    mode_id=43,
-                                    map_id=11
+                                    mode_id=1,
+                                    map_id=1
                                 )
 
                                 match_index = await _inc_match(uid_str)
                                 total = await _get_total_match_count()
                                 print_colored(
-                                    f"🚀 [MATCH #{match_index}] UDP starting → {server_ip_port} (background)",
+                                    f"🚀 [MATCH #{match_index}] BR UDP starting → {server_ip_port} (background)",
                                     Colors.CYAN
                                 )
                                 print_success(
-                                    f"[FUNCTIONAL] UDP task started. "
+                                    f"[FUNCTIONAL] BR UDP task started. "
                                     f"UID active: {match_index} | Total: {total}"
                                 )
 
@@ -1705,7 +1736,7 @@ async def functional_lone_wolf(addrs, starter_packet, account_region, client_ver
 
                                 print_info(
                                     f"[OFFLINE] {NEW_MATCH_DELAY}s offline → "
-                                    f"reload token → new StartMatch"
+                                    f"reload token → new BR StartMatch"
                                 )
                                 await asyncio.sleep(NEW_MATCH_DELAY)
                                 reconnects = 0
@@ -2311,8 +2342,8 @@ def load_accounts():
 
 async def main():
     print_colored("=" * 60, Colors.CYAN)
-    print_colored("    NIROB - FreeFire Level Up Bot (Lone Wolf Only)", Colors.GREEN)
-    print_colored("   Fixed Login System + Lone Wolf Auto Match", Colors.WHITE)
+    print_colored("    NIROB - FreeFire Level Up Bot (BATTLE ROYALE ONLY)", Colors.GREEN)
+    print_colored("   Lone Wolf Disabled → Forced Battle Royale Mode", Colors.WHITE)
     print_colored("=" * 60, Colors.CYAN)
     print_info(f"Web Port: {WEB_PORT}")
     print_info(f"Start Match Interval: {START_MATCH_INTERVAL}s")
@@ -2323,6 +2354,7 @@ async def main():
     print_info(f"Priority Regions: {PRIORITY_REGIONS}")
     print_info("Device System: 1 ID = 1 Persistent Device ID (devices.json)")
     print_info(f"Users File: {USERS_FILE}")
+    print_colored("🔥 MODE: BATTLE ROYALE ONLY (Lone Wolf packet disabled)", Colors.GREEN)
     print_colored("=" * 60, Colors.CYAN)
 
     try:
