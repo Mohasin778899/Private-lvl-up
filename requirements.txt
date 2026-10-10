@@ -21,7 +21,7 @@ idna==3.8
 pycryptodome==3.20.0
 
 # ==================== PROTOBUF PARSING ====================
-protobuf-decoder==0.0.5
+protobuf-decoder==0.4.0
 protobuf==5.28.2
 
 # ==================== GOOGLE PLAY SCRAPER ====================
